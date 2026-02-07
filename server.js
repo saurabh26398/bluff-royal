@@ -6,7 +6,12 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Allows any device to connect
+        methods: ["GET", "POST"]
+    }
+});
 // CRITICAL: Forces Express to serve images/files from the current folder
 app.use(express.static(path.resolve(__dirname)));
 
