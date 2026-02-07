@@ -1,4 +1,4 @@
-const socket = io();
+const socket = io("https://your-app-name.onrender.com");
 let myHand = [];
 let selectedIndices = [];
 let currentRank = 'A';
