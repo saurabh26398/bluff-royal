@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluff Royale Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-screen" class="overlay">
+        <div class="overlay-content">
+            <img src="./logo.png" class="shield-logo" alt="Logo">
+            <h2>Bluff Royale</h2>
+            <input type="text" id="username" placeholder="Enter Name">
+            <button onclick="join()" class="reveal-btn">JOIN</button>
+            <div id="waiting-list"></div>
+            <button id="start-btn" onclick="start()" style="display:none">START GAME</button>
+        </div>
+    </div>
+
+    <div id="victory-screen" class="overlay" style="display: none;">
+        <div class="overlay-content">
+            <img src="./victory.png" class="victory-banner" alt="Victory">
+            <h1 id="winner-text">WINNER!</h1>
+            <button onclick="location.reload()" class="reveal-btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <header>
+            <div class="brand">
+                <img src="./logo.png" class="app-logo">
+                <h1>Bluff Royale</h1>
+            </div>
+            <div id="status">Target: <span id="target-rank">A</span></div>
+        </header>
+
+        <div id="game-board">
+            <div id="discard-pile" class="card-back">
+                <span id="pile-count">0</span>
+            </div>
+            <div id="game-alert" class="game-alert-hidden">
+                <div id="alert-badge">CAUGHT!</div>
+                <div id="alert-msg">Message here</div>
+            </div>
+        </div>
+
+        <div id="player-area">
+            <h3 id="turn-indicator">Waiting...</h3>
+            <div id="cards-container"></div>
+            <div class="controls">
+                <button id="play-btn" onclick="submitMove()">Play Selected</button>
+                <button id="bluff-btn" onclick="callBluff()" class="danger">BLUFF!</button>
+            </div>
+        </div>
+
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Chat..." onkeypress="if(event.key==='Enter')sendChat()">
+                <button onclick="sendChat()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
