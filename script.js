@@ -5,8 +5,8 @@ let currentRank = 'A';
 let isMyTurn = false;
 
 function join() {
-    const name = document.getElementById('username').value;
-    if(name) socket.emit('joinGame', name);
+    const nameInput = document.getElementById('username');
+    if(nameInput.value) { socket.emit('joinGame', nameInput.value); nameInput.disabled = true; }
 }
 
 function start() { socket.emit('requestStart'); }
@@ -28,7 +28,14 @@ socket.on('gameUpdate', (data) => {
     document.getElementById('target-rank').innerText = currentRank;
     document.getElementById('pile-count').innerText = data.pileSize;
     isMyTurn = (socket.id === data.activePlayerId);
-    document.getElementById('turn-indicator').innerText = isMyTurn ? "YOUR TURN!" : "Waiting...";
+    
+    const passBtn = document.getElementById('pass-btn');
+    passBtn.disabled = false;
+    passBtn.innerText = "Pass Rank";
+
+    const turnText = document.getElementById('turn-indicator');
+    turnText.innerText = isMyTurn ? "YOUR TURN!" : "Waiting...";
+    document.getElementById('player-area').style.opacity = isMyTurn ? "1" : "0.6";
 });
 
 socket.on('bluffResult', (data) => {
@@ -64,6 +71,13 @@ function submitMove() {
 }
 
 function callBluff() { socket.emit('callBluff'); }
+
+function votePass() {
+    socket.emit('votePass');
+    const btn = document.getElementById('pass-btn');
+    btn.disabled = true;
+    btn.innerText = "Waiting...";
+}
 
 function sendChat() {
     const el = document.getElementById('chat-input');

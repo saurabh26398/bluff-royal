@@ -28,17 +28,12 @@
 
     <div id="game-container">
         <header>
-            <div class="brand">
-                <img src="./logo.png" class="app-logo">
-                <h1>Bluff Royale</h1>
-            </div>
+            <div class="brand"><img src="./logo.png" class="app-logo"><h1>Bluff Royale</h1></div>
             <div id="status">Target: <span id="target-rank">A</span></div>
         </header>
 
         <div id="game-board">
-            <div id="discard-pile" class="card-back">
-                <span id="pile-count">0</span>
-            </div>
+            <div id="discard-pile" class="card-back"><span id="pile-count">0</span></div>
             <div id="game-alert" class="game-alert-hidden">
                 <div id="alert-badge">CAUGHT!</div>
                 <div id="alert-msg">Message here</div>
@@ -50,6 +45,7 @@
             <div id="cards-container"></div>
             <div class="controls">
                 <button id="play-btn" onclick="submitMove()">Play Selected</button>
+                <button id="pass-btn" onclick="votePass()" class="info-btn">Pass Rank</button> 
                 <button id="bluff-btn" onclick="callBluff()" class="danger">BLUFF!</button>
             </div>
         </div>

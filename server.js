@@ -6,19 +6,21 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: "*", // Allows any device to connect
-        methods: ["GET", "POST"]
-    }
+    cors: { origin: "*", methods: ["GET", "POST"] }
 });
-// CRITICAL: Forces Express to serve images/files from the current folder
+
 app.use(express.static(path.resolve(__dirname)));
 
 let players = []; 
 let discardPile = [];
-let currentRankIndex = 0; 
+let currentRank = 'A'; 
 let activePlayerIndex = 0;
+let passVotes = new Set();
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+function pickRandomRank() {
+    currentRank = ranks[Math.floor(Math.random() * ranks.length)];
+}
 
 io.on('connection', (socket) => {
     socket.on('joinGame', (username) => {
@@ -35,8 +37,9 @@ io.on('connection', (socket) => {
         deck.sort(() => Math.random() - 0.5);
 
         discardPile = [];
-        currentRankIndex = 0;
+        pickRandomRank();
         activePlayerIndex = 0;
+        passVotes.clear();
 
         const cardsPerPlayer = Math.floor(deck.length / players.length);
         players.forEach((p, i) => {
@@ -56,6 +59,7 @@ io.on('connection', (socket) => {
         discardPile.push({ cards: playedCards, claim: data.claim, playerId: socket.id, playerName: player.name });
         
         activePlayerIndex = (activePlayerIndex + 1) % players.length;
+        passVotes.clear(); // Reset pass votes on move
         socket.emit('dealCards', player.hand);
         
         if (player.hand.length === 0) io.emit('victory', player.name);
@@ -72,9 +76,8 @@ io.on('connection', (socket) => {
         let loser = isBluff ? liar : caller;
         discardPile.forEach(move => loser.hand.push(...move.cards));
         discardPile = [];
-        
-        // LOGIC: Rank only changes after a Bluff is called
-        currentRankIndex = (currentRankIndex + 1) % 13;
+        passVotes.clear();
+        pickRandomRank();
 
         io.to(liar.id).emit('dealCards', liar.hand);
         io.to(caller.id).emit('dealCards', caller.hand);
@@ -84,6 +87,21 @@ io.on('connection', (socket) => {
             type: isBluff ? 'fail' : 'success' 
         });
         broadcastUpdate();
+    });
+
+    socket.on('votePass', () => {
+        passVotes.add(socket.id);
+        const voter = players.find(p => p.id === socket.id);
+        
+        if (passVotes.size >= players.length) {
+            discardPile = [];
+            passVotes.clear();
+            pickRandomRank();
+            io.emit('bluffResult', { title: "PASSED!", msg: "Everyone skipped! New random rank.", type: "success" });
+            broadcastUpdate();
+        } else {
+            io.emit('receiveChatMessage', { name: "SYSTEM", text: `${voter.name} wants to Pass (${passVotes.size}/${players.length})` });
+        }
     });
 
     socket.on('sendChatMessage', (message) => {
@@ -99,7 +117,7 @@ io.on('connection', (socket) => {
 
 function broadcastUpdate() {
     io.emit('gameUpdate', {
-        rank: ranks[currentRankIndex],
+        rank: currentRank,
         pileSize: discardPile.length,
         activePlayerId: players[activePlayerIndex] ? players[activePlayerIndex].id : null
     });
